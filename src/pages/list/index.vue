@@ -8,57 +8,114 @@
       <span>价格</span>
     </div>
     <!-- 商品列表 -->
-    <scroll-view class="goods" scroll-y>
-      <div class="item">
+    <scroll-view class="goods" scroll-y @scrolltolower="gainMoreGoodsData">
+      <div class="item" v-for="searchGoodsResultItem in searchGoodsResultDataList" :key="searchGoodsResultItem.cat_id">
         <!-- 商品图片 -->
-        <image class="pic" src="/static/uploads/goods_1.jpg"></image>
+        <image class="pic" :src="searchGoodsResultItem.goods_small_logo"></image>
         <!-- 商品信息 -->
         <div class="meta">
-          <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-          <p class="price"><span>￥</span>1399<span>.00</span></p>
+          <p class="name">{{searchGoodsResultItem.goods_name}}</p>
+          <p class="price"><span>￥</span>{{searchGoodsResultItem.goods_price}}<span>.00</span></p>
         </div>
       </div>
-      <div class="item">
-        <!-- 商品图片 -->
-        <image class="pic" src="/static/uploads/goods_2.jpg"></image>
-        <!-- 商品信息 -->
-        <div class="meta">
-          <p class="name">卡奇莱德汽车车载空气净化器负离子除甲醛PM2.5除烟异味车用氧吧双涡轮出风（红色）</p>
-          <p class="price"><span>￥</span>168<span>.00</span></p>
-        </div>
-      </div>
-      <div class="item">
-        <!-- 商品图片 -->
-        <image class="pic" src="/static/uploads/goods_3.jpg"></image>
-        <!-- 商品信息 -->
-        <div class="meta">
-          <p class="name">沿途（yantu）车载充电器车充一拖二usb转接口手机智能头多功能汽车点烟器</p>
-          <p class="price"><span>￥</span>168<span>.00</span></p>
-        </div>
-      </div>
-      <div class="item">
-        <!-- 商品图片 -->
-        <image class="pic" src="/static/uploads/goods_4.jpg"></image>
-        <!-- 商品信息 -->
-        <div class="meta">
-          <p class="name">车载冰箱7.5L 冷暖两用汽车冰箱半导体12V迷你电冰箱升级款</p>
-          <p class="price"><span>￥</span>168<span>.00</span></p>
-        </div>
-      </div>
-      <div class="item">
-        <!-- 商品图片 -->
-        <image class="pic" src="/static/uploads/goods_5.jpg"></image>
-        <!-- 商品信息 -->
-        <div class="meta">
-          <p class="name">神行者电子狗 神行者L70电子狗测速 测速雷达 流动测速 多种警示路段提醒</p>
-          <p class="price"><span>￥</span>168<span>.00</span></p>
-        </div>
-      </div>
+      <div class="tip" v-show="!searchGoodsResultDataList.length">没有找到相关的数据~</div>
+     
     </scroll-view>
   </div>
 </template>
 
+
+<script>
+
+  // 导入对 wx.request 的 Promise 封装版本
+  import promiseRequest from "@/utility/package_promise_request"
+
+  export default {
+
+    // 获得地址参数通过 onLoad 实现
+    async onLoad (query) {
+      // console.log(11111)
+      // console.log(query)
+
+      // 将地址参数赋值给初始数据
+      this.query = query;
+
+      // 配置页码相关参数
+      query.pagenum = this.pagenum;
+      query.pagesize = this.pagesize;
+
+      // 根据址中参数，查询查应的商品列表
+      const gainGoodsDataResult = await promiseRequest({
+        url: '/api/public/v1/goods/search',
+        data: query
+      })
+
+      // console.log(message);
+      // 更新数据
+      this.searchGoodsResultDataList = gainGoodsDataResult.message.goods;
+
+      // 记录后端搜索的此商品数据总共有多少条
+      this.total = gainGoodsDataResult.message.total;
+
+    },
+    
+    data () {
+      return {
+
+        // 搜索结果商品列表
+        searchGoodsResultDataList: [],
+
+        // 当前第几页
+        pagenum: 1,
+
+        // 每页取几条数据
+        pagesize: 5,
+
+        // 提取出来查询参数
+        query: null,
+
+        // 当前搜索的商品总共多少条
+        total: 0,
+
+      }
+    },
+
+    methods: {
+
+      // 用户上拉加载更多数据
+      async gainMoreGoodsData () {
+
+        // 没有更多数据,终止请求
+        if(this.searchGoodsResultDataList.length === this.total) return
+
+        // 配置页码相关参数
+        this.query.pagenum = ++this.pagenum
+        this.query.pagesize = this.pagesize
+        
+        // 请求更多数据
+        const gainMoreGoodsDataResult = await promiseRequest({
+          url: '/api/public/v1/goods/search',
+          data: this.query
+        })
+        this.searchGoodsResultDataList = this.searchGoodsResultDataList.concat(gainMoreGoodsDataResult.message.goods)
+
+      },
+
+    }
+
+  }
+</script>
+
+
+
 <style scoped lang="less">
+
+  .tip {
+    text-align: center;
+    margin-top: 120rpx;
+    font-size: 36rpx;
+    color: #666;
+  }
 
   .filter {
     display: flex;
@@ -132,8 +189,3 @@
 
 </style>
 
-<script>
-  export default {
-
-  }
-</script>

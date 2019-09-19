@@ -2,63 +2,63 @@
   <!-- 搜索 -->
   <div class="search" :class="{focused: focused}">
     <!-- 搜索框 -->
-    <div class="input-wrap" @click="goSearch">
-      <input type="text" :placeholder="placeholder">
+    <div class="input-wrap" @click="goSearch" >
+      <input type="text" :placeholder="placeholder" @input="searchResult"  v-model="searchKeyword" @confirm="saveSearchHistoryRecordAndSkipGoodsListPage" >
       <span class="cancle" @click.stop="cancleSearch">取消</span>
     </div>
     <!-- 搜索结果 -->
     <div class="content">
-      <div class="title">搜索历史<span class="clear"></span></div>
+      <div class="title">搜索历史<span class="clear" @click="clearHistoryRecord"></span></div>
       <div class="history">
-        <navigator url="">小米</navigator>
-        <navigator url="">智能电视</navigator>
-        <navigator url="">小米空气净化器</navigator>
-        <navigator url="">西门子洗碗机</navigator>
-        <navigator url="">华为手机</navigator>
-        <navigator url="">苹果</navigator>
-        <navigator url="">锤子</navigator>
+        <navigator url="" v-for="(searchHistoryRecordItem,index) in searchHistoryRecordDataList" :key="index" >{{searchHistoryRecordItem}}</navigator>
+        
       </div>
       <!-- 结果 -->
-      <scroll-view scroll-y class="result">
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
-        <navigator url="">小米</navigator>
+      <scroll-view scroll-y class="result" v-if="searchResultDataList.length">
+        <navigator url="" v-for="searchResultItem in searchResultDataList" :key="searchResultItem.goods_id">{{searchResultItem.goods_name}}</navigator>
+        
       </scroll-view>
     </div>
   </div>
 </template>
+
+
+
 <script>
+
+  // 导入对 wx.request 的 Promise 封装版本
+  import promiseRequest from "@/utility/package_promise_request"
   
   export default {
+
     data () {
       return {
         focused: false,
-        placeholder: ''
+        placeholder: '',
+
+        // 用户搜索关键字
+        searchKeyword: "",
+
+        // 搜索关键字结果数据
+        searchResultDataList: [],
+
+        // 搜索历史记录数据
+        searchHistoryRecordDataList: mpvue.getStorageSync("history") || [],
+
+        /**
+         *      优化搜索请求  --->  加锁的逻辑有bug   --->   
+         *          发现个问题  --->  在老师对优化搜索请求的逻辑上,,,加锁的逻辑上是有bug的,,,
+         *          因为 当我快速输入ab的时候a的请求如果没结束的话,当我b准备去发请求的时候就发不出去,
+         *          就被return掉了,,,但是  --->  问题来了,,,当a的请求结束了的话,,,我b也没法在自动去发请求了呀,,,
+         *          代码又不能自己回来再判断一遍if(this.locked) return这个,,,对吧,,,应该是个bug,,,
+         */
+
+        // // 对本次请求加把锁,本次请求未完成下一次请求不要发
+        // locked: false
+
       }
     },
+
     methods: {
       goSearch (ev) {
         this.focused = true;
@@ -68,20 +68,87 @@
         this.$emit('search', {
           pageHeight: mpvue.getSystemInfoSync().windowHeight
         })
+
+        // 隐藏tabbar
+        mpvue.hideTabBar()
+
       },
       cancleSearch () {
         this.focused = false;
         this.placeholder = '';
 
+        // 清空用户搜索关键字
+        this.searchKeyword = "";
+
+        // 清空搜索关键字结果数据
+        this.searchResultDataList = [];
+
         // 触发父组件自定义事件
         this.$emit('search', {
           pageHeight: 'auto'
         })
+
+        // 显示tabbar
+        mpvue.showTabBar()
+
+      },
+
+      // 用户在搜索框输入内容时,发起请求
+      async searchResult () {
+
+        if(!this.searchKeyword.trim()) return this.searchResultDataList = []
+
+        // // 如果上一次请求请求还未完成,未结束,下一次请求不要发
+        // if(this.locked) return
+
+        // // 对本次请求加锁
+        // this.locked = true
+
+        const searchResultData = await promiseRequest({
+          url : "/api/public/v1/goods/qsearch",
+          data: {query: this.searchKeyword}
+        })
+        // console.log(searchResultData)
+        this.searchResultDataList = searchResultData.message
+        // console.log(searchResultData.message)
+
+        // // 本次请求已完成,已结束的情况下,,,对本次请求解锁
+        // this.locked = false
+
+      },
+
+      // 存储搜索历史记录  and  跳转到商品列表页方法
+      saveSearchHistoryRecordAndSkipGoodsListPage () {
+
+        this.searchHistoryRecordDataList.push(this.searchKeyword)
+        mpvue.setStorageSync("history",this.searchHistoryRecordDataList)
+
+        // // 输入的关键字为空时,不能跳转
+        // if(this.searchKeyword === '') return;
+
+        // // 跳转到商品列表
+        // mpvue.navigateTo({
+        //   url: '/pages/list/main?query=' + this.keywords
+        // })
+
+      },
+
+      // 清空历史记录方法
+      clearHistoryRecord () {
+
+        mpvue.removeStorageSync("history")
+        this.searchHistoryRecordDataList = []
+
       }
+
+
     }
   }
 
 </script>
+
+
+
 <style lang="less" scoped>
   .search {
     display: flex;

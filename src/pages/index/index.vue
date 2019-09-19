@@ -32,6 +32,10 @@
       </div>
      
     </div>
+
+    <!-- 回到顶部 -->
+    <div class="goTop" @click="goTop" v-show="scrollTop > 200"></div>
+
   </div>
 </template>
 
@@ -43,6 +47,20 @@
   import promiseRequest from "@/utility/package_promise_request"
 
   export default {
+
+    // 开启分享,转发当前页面功能
+    onShareAppMessage () {
+      return {
+        title : "Hello  World",
+        path : "/pages/index/main",
+        imageUrl : "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1568545134795&di=b99de7dd878c08ef353fb608d5183bbd&imgtype=0&src=http%3A%2F%2Fpic2.zhimg.com%2Fv2-b6eaa303936d70791ba6785f88e07249_b.jpg"
+      }
+    },
+
+    // 监听用户滚动页面操作
+    onPageScroll (event) {
+      this.scrollTop = event.scrollTop
+    },
 
     // 监听用户下拉刷新操作
     async onPullDownRefresh () {
@@ -75,7 +93,10 @@
         mainNavigatorDataList: [],
 
         // 楼层数据
-        floorDataList: []
+        floorDataList: [],
+
+        // 页面滚动距离数据
+        scrollTop: 0
 
       }
     },
@@ -118,6 +139,13 @@
         // console.log(gainFloorDataResult)
         this.floorDataList = gainFloorDataResult.message
         // console.log(gainFloorDataResult.message)
+      },
+
+      // 回到顶部方法
+      goTop () {
+        mpvue.pageScrollTo({
+          scrollTop : 0
+        })
       }
 
     },
@@ -139,6 +167,16 @@
 </script>
 
 <style scoped lang="less">
+
+  .goTop {
+      position: fixed;
+      right: 40rpx;
+      bottom: 40rpx;
+      width: 100rpx;
+      height: 100rpx;
+      background-color: rgba(255, 0, 64, 0.6);
+      border-radius: 50%;
+    }
 
   .banner {
     width: 100%;

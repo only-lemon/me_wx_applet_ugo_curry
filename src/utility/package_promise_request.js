@@ -19,6 +19,9 @@ export default function (configRequest) {
   // 配置基础路径
   url = 'https://www.zhengzhicheng.cn' + url;
 
+  // 开启loading效果
+  mpvue.showLoading({title : "正在加载..."})
+
   return new Promise((resolve,reject)=>{
     mpvue.request({
       url,
@@ -26,6 +29,10 @@ export default function (configRequest) {
       data,
       success (responseResult) {
         resolve(responseResult.data)
+
+        // 数据响应成功   --->   结束loading效果
+        mpvue.hideLoading()
+
       },
       fail () {
         reject()

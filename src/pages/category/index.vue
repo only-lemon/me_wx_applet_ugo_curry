@@ -3,20 +3,12 @@
     <!-- 搜索 -->
     <search></search>
     <!-- 分类 -->
-    <div class="category">
+    <div class="category" v-if="topCategoryDataList.length">
       <!-- 顶级分类 -->
       <ul class="sup">
         <scroll-view scroll-y>
-          <li class="active">大家电</li>
-          <li>热门推荐</li>
-          <li>海外购</li>
-          <li>苏宁房产</li>
-          <li>手机相机</li>
-          <li>电脑办公</li>
-          <li>厨卫电器</li>
-          <li>食品酒水</li>
-          <li>居家生活</li>
-          <li>厨房电器</li>
+          <li  :class="{active:topIndex === currentIndex}" @click="toggleSecondLevelCategoryData(topIndex)" v-for="(topCategoryItem,topIndex) in topCategoryDataList" :key="topCategoryItem.cat_id">{{topCategoryItem.cat_name}}</li>
+         
         </scroll-view>
       </ul>
       <!-- 子级分类 -->
@@ -24,125 +16,96 @@
         <scroll-view scroll-y>
           <!-- 封面图 -->
           <image src="/static/uploads/category.png" class="thumb"></image>
-          <div class="children">
-            <div class="title">电视</div>
+          <div class="children" v-for="secondLevelCategoryItem in secondLevelCategoryDataList.children" :key="secondLevelCategoryItem.cat_id">
+            <div class="title" >{{secondLevelCategoryItem.cat_name}}</div>
             <!-- 品牌 -->
-            <div class="brands">
-              <navigator url="">
-                <image src="/static/uploads/brand_1.jpg"></image>
-                <span>曲面电视</span>
+            <div class="brands" >
+              <navigator url="" v-for="(secondLevelCategoryItemBrandItem,index_) in secondLevelCategoryItem.children" :key="index_">
+                <image :src="secondLevelCategoryItemBrandItem.cat_icon"></image>
+                <span>{{secondLevelCategoryItemBrandItem.cat_name}}</span>
               </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_2.jpg"></image>
-                <span>海信</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_3.jpg"></image>
-                <span>创维</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_4.jpg"></image>
-                <span>夏普</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_5.jpg"></image>
-                <span>TCL</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_6.jpg"></image>
-                <span>PPTV</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_7.jpg"></image>
-                <span>小米</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_8.jpg"></image>
-                <span>长虹</span>
-              </navigator>
+             
             </div>
           </div>
-          <div class="children">
-            <div class="title">电视</div>
-            <!-- 品牌 -->
-            <div class="brands">
-              <navigator url="">
-                <image src="/static/uploads/brand_1.jpg"></image>
-                <span>曲面电视</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_2.jpg"></image>
-                <span>海信</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_3.jpg"></image>
-                <span>创维</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_4.jpg"></image>
-                <span>夏普</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_5.jpg"></image>
-                <span>TCL</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_6.jpg"></image>
-                <span>PPTV</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_7.jpg"></image>
-                <span>小米</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_8.jpg"></image>
-                <span>长虹</span>
-              </navigator>
-            </div>
-          </div>
-          <div class="children">
-            <div class="title">电视</div>
-            <!-- 品牌 -->
-            <div class="brands">
-              <navigator url="">
-                <image src="/static/uploads/brand_1.jpg"></image>
-                <span>曲面电视</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_2.jpg"></image>
-                <span>海信</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_3.jpg"></image>
-                <span>创维</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_4.jpg"></image>
-                <span>夏普</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_5.jpg"></image>
-                <span>TCL</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_6.jpg"></image>
-                <span>PPTV</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_7.jpg"></image>
-                <span>小米</span>
-              </navigator>
-              <navigator url="">
-                <image src="/static/uploads/brand_8.jpg"></image>
-                <span>长虹</span>
-              </navigator>
-            </div>
-          </div>
+          
         </scroll-view>
       </div>
     </div>
   </div>
 </template>
+
+
+
+<script>
+
+  import search from '@/components/search';
+
+  // 导入对 wx.request 的 Promise 封装版本
+  import promiseRequest from "@/utility/package_promise_request"
+
+
+  export default {
+
+    data () {
+      return {
+
+        // 侧边顶级分类数据
+        topCategoryDataList: [],
+
+        // 二级分类数据   --->   在计算属性里
+
+        // 切换二级分类数据所用到的索引值
+        currentIndex: 0
+
+      }
+    },
+
+    methods: {
+      
+      // 获取分类页中的分类数据的方法
+      async gainCategoryData () {
+        const gainCategoryDataResult = await promiseRequest({
+          url : "/api/public/v1/categories"
+        })
+        // console.log(gainCategoryDataResult)
+        this.topCategoryDataList = gainCategoryDataResult.message
+        console.log(gainCategoryDataResult.message)
+
+
+      },
+
+      // 切换二级分类数据
+      toggleSecondLevelCategoryData(topIndex){
+        this.currentIndex = topIndex
+      }
+
+    },
+
+    computed: {
+
+      secondLevelCategoryDataList () {
+        return this.topCategoryDataList.length && this.topCategoryDataList[this.currentIndex]
+      }
+
+    },
+    
+    components: {
+      search
+    },
+
+    mounted () {
+      
+      // 页面一加载就需要请求回来的数据   --->   获取分类页分类数据
+      this.gainCategoryData()
+      
+    }
+
+  }
+</script>
+
+
+
+
 
 <style scoped lang="less">
 
@@ -249,14 +212,4 @@
   }
 </style>
 
-<script>
 
-  import search from '@/components/search';
-
-  export default {
-    
-    components: {
-      search
-    }
-  }
-</script>
