@@ -3,105 +3,34 @@
     <search @search="disableScroll"></search>
     <!-- 焦点图 -->
     <swiper class="banner" indicator-dots indicator-color="rgba(255, 255, 255, 0.6)" indicator-active-color="#fff">
-      <swiper-item>
-        <a href="">
-          <img src="/static/uploads/banner1.png" />
+      <swiper-item v-for="bannerItem in bannerDataList" :key="bannerItem.goods_id">
+        <a href="/pages/goods/main">
+          <img :src="bannerItem.image_src" />
         </a>
       </swiper-item>
-      <swiper-item>
-        <a href="">
-          <img src="/static/uploads/banner2.png" />
-        </a>
-      </swiper-item>
-      <swiper-item>
-        <a href="">
-          <img src="/static/uploads/banner3.png" />
-        </a>
-      </swiper-item>
+     
     </swiper>
     <!-- 导航条 -->
     <div class="navs">
-      <a href="">
-        <img src="/static/uploads/icon_index_nav_1@2x.png" />
+      <a href="" v-for="navigatorItem in mainNavigatorDataList" :key="navigatorItem.name">
+        <img :src="navigatorItem.image_src" />
       </a>
-      <a href="">
-        <img src="/static/uploads/icon_index_nav_2@2x.png" />
-      </a>
-      <a href="">
-        <img src="/static/uploads/icon_index_nav_3@2x.png" />
-      </a>
-      <a href="">
-        <img src="/static/uploads/icon_index_nav_4@2x.png" />
-      </a>
+     
     </div>
     <!-- 楼层 -->
     <div class="floors">
-      <div class="floor">
-        <div class="title">
-          <img src="/static/uploads/pic_floor01_title.png" />
+      <div class="floor" v-for="(floorItem,index) in floorDataList" :key="index">
+        <div class="title" > 
+          <img :src="floorItem.floor_title.image_src" />
         </div>
         <div class="items">
-          <a href="">
-            <img src="/static/uploads/pic_floor01_1@2x.png" />
+          <a href="/pages/list/main" v-for="(perFloorProductItem,index_) in floorItem.product_list" :key="index_">
+            <img :src="perFloorProductItem.image_src" />
           </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor01_2@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor01_3@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor01_4@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor01_5@2x.png" />
-          </a>
+          
         </div>
       </div>
-      <div class="floor">
-        <div class="title">
-          <img src="/static/uploads/pic_floor02_title.png"/>
-        </div>
-        <div class="items">
-          <a href="">
-            <img src="/static/uploads/pic_floor02_1@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor02_2@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor02_3@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor02_4@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor02_5@2x.png" />
-          </a>
-        </div>
-      </div>
-      <div class="floor">
-        <div class="title">
-          <img src="/static/uploads/pic_floor03_title.png" />
-        </div>
-        <div class="items">
-          <a href="">
-            <img src="/static/uploads/pic_floor03_1@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor03_2@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor03_3@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor03_4@2x.png" />
-          </a>
-          <a href="">
-            <img src="/static/uploads/pic_floor03_5@2x.png" />
-          </a>
-        </div>
-      </div>
+     
     </div>
   </div>
 </template>
@@ -115,9 +44,39 @@
 
   export default {
 
+    // 监听用户下拉刷新操作
+    async onPullDownRefresh () {
+
+      // 当用户下拉操作时  --->   刷新数据
+      
+      // 页面一加载就需要请求回来的数据   --->   获取首页轮播图数据
+      await this.gainIndexPageBannerData()
+
+      // 页面一加载就需要请求回来的数据   --->   获取首页主导航数据
+      await this.gainMainNavigatorData()
+
+      // 页面一加载就需要请求回来的数据   --->   获取首页楼层数据
+      await this.gainFloorData()
+
+      // 终止下拉loading状态
+      mpvue.stopPullDownRefresh()
+
+    },
+
     data () {
       return {
-        pageHeight: 'auto'
+
+        pageHeight: 'auto',
+
+        // 首页轮播图数据
+        bannerDataList: [],
+
+        // 主导航数据
+        mainNavigatorDataList: [],
+
+        // 楼层数据
+        floorDataList: []
+
       }
     },
 
@@ -135,7 +94,30 @@
         const gainIndexPageBannerDataResult =  await promiseRequest({
           url:"/api/public/v1/home/swiperdata"
         })
-        console.log(gainIndexPageBannerDataResult)
+        // console.log(gainIndexPageBannerDataResult)
+        this.bannerDataList = gainIndexPageBannerDataResult.message
+        // console.log(gainIndexPageBannerDataResult.message)
+      },
+
+      // 获取主导航数据
+      async gainMainNavigatorData () {
+        const gainMainNavigatorDataResult = await promiseRequest({
+          url : "/api/public/v1/home/catitems"
+        })
+        // console.log(gainMainNavigatorDataResult)
+        this.mainNavigatorDataList = gainMainNavigatorDataResult.message
+        // console.log(gainMainNavigatorDataResult.message)
+
+      },
+
+      // 获取楼层数据
+      async gainFloorData () {
+        const gainFloorDataResult  = await promiseRequest({
+          url : "/api/public/v1/home/floordata"
+        })
+        // console.log(gainFloorDataResult)
+        this.floorDataList = gainFloorDataResult.message
+        // console.log(gainFloorDataResult.message)
       }
 
     },
@@ -144,6 +126,14 @@
 
       // 页面一加载就需要请求回来的数据   --->   获取首页轮播图数据
       this.gainIndexPageBannerData()
+
+      // 页面一加载就需要请求回来的数据   --->   获取首页主导航数据
+      this.gainMainNavigatorData()
+
+      // 页面一加载就需要请求回来的数据   --->   获取首页楼层数据
+      this.gainFloorData()
+
+
     }
   }
 </script>

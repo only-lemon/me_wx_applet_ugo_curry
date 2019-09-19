@@ -25,7 +25,7 @@ export default function (configRequest) {
       method,
       data,
       success (responseResult) {
-        resolve(responseResult)
+        resolve(responseResult.data)
       },
       fail () {
         reject()
