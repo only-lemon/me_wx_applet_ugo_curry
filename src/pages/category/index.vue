@@ -69,7 +69,7 @@
         })
         // console.log(gainCategoryDataResult)
         this.topCategoryDataList = gainCategoryDataResult.message
-        console.log(gainCategoryDataResult.message)
+        // console.log(gainCategoryDataResult.message)
 
 
       },

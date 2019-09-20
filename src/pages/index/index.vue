@@ -4,7 +4,7 @@
     <!-- 焦点图 -->
     <swiper class="banner" indicator-dots indicator-color="rgba(255, 255, 255, 0.6)" indicator-active-color="#fff">
       <swiper-item v-for="bannerItem in bannerDataList" :key="bannerItem.goods_id">
-        <a href="/pages/goods/main">
+        <a :href="'/pages/goods/main?id=' + bannerItem.goods_id">
           <img :src="bannerItem.image_src" />
         </a>
       </swiper-item>
@@ -12,7 +12,7 @@
     </swiper>
     <!-- 导航条 -->
     <div class="navs">
-      <a href="" v-for="navigatorItem in mainNavigatorDataList" :key="navigatorItem.name">
+      <a :href="navigatorItem.navigator_url || '/pages/list/main?query=' + navigatorItem.name" :open-type="navigatorItem.open_type || 'navigate'" :key="navigatorItem.name" v-for="navigatorItem in mainNavigatorDataList">
         <img :src="navigatorItem.image_src" />
       </a>
      
@@ -24,7 +24,7 @@
           <img :src="floorItem.floor_title.image_src" />
         </div>
         <div class="items">
-          <a href="/pages/list/main" v-for="(perFloorProductItem,index_) in floorItem.product_list" :key="index_">
+          <a :href="'/pages/list/main?query=' + perFloorProductItem.name" v-for="(perFloorProductItem,index_) in floorItem.product_list" :key="index_">
             <img :src="perFloorProductItem.image_src" />
           </a>
           

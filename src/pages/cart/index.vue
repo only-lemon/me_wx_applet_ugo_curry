@@ -2,13 +2,16 @@
   <div class="wrapper">
     <!-- 收货信息 -->
     <dl class="shipment">
-      <dt>收货人: </dt>
-      <dd class="meta">
-        <span class="name">刘德华</span>
-        <span class="phone">13535337057</span>
-      </dd>
-      <dt>收货地址:</dt>
-      <dd>广东省广州市天河区一珠吉</dd>
+      <block v-if="selectedAddressData">
+        <dt>收货人: </dt>
+        <dd class="meta">
+          <span class="name">{{selectedAddressData.userName}}</span>
+          <span class="phone">{{selectedAddressData.telNumber}}</span>
+        </dd>
+        <dt>收货地址:</dt>
+        <dd>{{concatSelectedAddressDataInfo}}</dd>
+      </block>
+      <button type="primary" @click="selectAddress" v-else>选择收货地址</button>
     </dl>
     <!-- 购物车 -->
     <div class="carts">
@@ -148,6 +151,50 @@
     </div>
   </div>
 </template>
+
+
+
+<script>
+  export default {
+
+    data () {
+      return {
+
+        // 用户选中的收获地址信息数据
+        selectedAddressData: null
+        
+      }
+    },
+
+    methods: {
+
+      // 选择收获地址方法
+      selectAddress () {
+        mpvue.chooseAddress({
+          success: (selectedAddressInfo) => {
+            console.log(selectedAddressInfo)
+            this.selectedAddressData = selectedAddressInfo
+          }
+        })
+      }
+
+    },
+
+    computed: {
+      
+      concatSelectedAddressDataInfo () {
+        return this.selectedAddressData && (this.selectedAddressData.provinceName + 
+                                                this.selectedAddressData.cityName + 
+                                                    this.selectedAddressData.countyName + 
+                                                        this.selectedAddressData.detailInfo)
+      }
+
+    }
+    
+  }
+</script>
+
+
 
 <style scoped lang="less">
 
@@ -357,8 +404,3 @@
   }
 </style>
 
-<script>
-  export default {
-    
-  }
-</script>

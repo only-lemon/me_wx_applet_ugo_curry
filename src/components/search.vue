@@ -10,7 +10,7 @@
     <div class="content">
       <div class="title">搜索历史<span class="clear" @click="clearHistoryRecord"></span></div>
       <div class="history">
-        <navigator url="" v-for="(searchHistoryRecordItem,index) in searchHistoryRecordDataList" :key="index" >{{searchHistoryRecordItem}}</navigator>
+        <navigator :url="'/pages/list/main?query=' + searchHistoryRecordItem" v-for="(searchHistoryRecordItem,index) in searchHistoryRecordDataList" :key="index" >{{searchHistoryRecordItem}}</navigator>
         
       </div>
       <!-- 结果 -->
@@ -121,15 +121,19 @@
       saveSearchHistoryRecordAndSkipGoodsListPage () {
 
         this.searchHistoryRecordDataList.push(this.searchKeyword)
+
+        // 将重复的单元删除
+        this.searchHistoryRecordDataList = [...new Set(this.searchHistoryRecordDataList)];
+
         mpvue.setStorageSync("history",this.searchHistoryRecordDataList)
 
         // // 输入的关键字为空时,不能跳转
         // if(this.searchKeyword === '') return;
 
-        // // 跳转到商品列表
-        // mpvue.navigateTo({
-        //   url: '/pages/list/main?query=' + this.keywords
-        // })
+        // 跳转到商品列表
+        mpvue.navigateTo({
+          url: '/pages/list/main?query=' + this.searchKeyword
+        })
 
       },
 

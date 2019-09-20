@@ -9,7 +9,11 @@
     </div>
     <!-- 商品列表 -->
     <scroll-view class="goods" scroll-y @scrolltolower="gainMoreGoodsData">
-      <div class="item" v-for="searchGoodsResultItem in searchGoodsResultDataList" :key="searchGoodsResultItem.cat_id">
+      <div class="item" 
+        v-for="searchGoodsResultItem in searchGoodsResultDataList" 
+        :key="searchGoodsResultItem.cat_id"
+        @click="goGoodsDetailPage(searchGoodsResultItem.cat_id)"
+        >
         <!-- 商品图片 -->
         <image class="pic" :src="searchGoodsResultItem.goods_small_logo"></image>
         <!-- 商品信息 -->
@@ -100,6 +104,15 @@
         this.searchGoodsResultDataList = this.searchGoodsResultDataList.concat(gainMoreGoodsDataResult.message.goods)
 
       },
+
+      // 去商品详情页
+      goGoodsDetailPage (goodsId) {
+
+        mpvue.navigateTo({
+          url: '/pages/goods/main?id=' + goodsId
+        })
+
+      }
 
     }
 
