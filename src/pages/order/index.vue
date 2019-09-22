@@ -9,92 +9,104 @@
     </div>
     <!-- 订单 -->
     <scroll-view class="orders" scroll-y>
-      <div class="item">
-        <!-- 商品图片 -->
-        <image class="pic" src="/static/uploads/goods_1.jpg"></image>
-        <!-- 商品信息 -->
-        <div class="meta">
-          <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-          <p class="price"><span>￥</span>1399<span>.00</span></p>
-          <p class="num">x1</p>
-        </div>
+      <div class="item" v-for="(perOneOrder,index) in ordersDataList" :key="index" >
+        <block v-for="(perOneOrderInferiorGood,index_) in perOneOrder.goods" :key="index_" >
+          <!-- 商品图片 -->
+          <image class="pic" :src="perOneOrderInferiorGood.goods_small_logo"></image>
+          <!-- 商品信息 -->
+          <div class="meta">
+            <p class="name">{{perOneOrderInferiorGood.goods_name}}</p>
+            <p class="price"><span>￥</span>{{perOneOrderInferiorGood.goods_price}}<span>.00</span></p>
+            <p class="num">x{{perOneOrderInferiorGood.goods_number}}</p>
+          </div>
+        </block>
         <!-- 总价 -->
         <div class="amount">
-          共1件商品 总计: ￥4099(含运费0.00)
+          共1件商品 总计: ￥{{order.order_price}}(含运费0.00)
         </div>
         <!-- 其它 -->
         <div class="extra">
-          订单号: GD20180511000000000178
-          <button size="mini" type="primary">支付</button>
-        </div>
-      </div>
-      <div class="item">
-        <!-- 商品图片 -->
-        <image class="pic" src="/static/uploads/goods_1.jpg"></image>
-        <!-- 商品信息 -->
-        <div class="meta">
-          <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-          <p class="price"><span>￥</span>1399<span>.00</span></p>
-          <p class="num">x1</p>
-        </div>
-        <!-- 总价 -->
-        <div class="amount">
-          共1件商品 总计: ￥4099(含运费0.00)
-        </div>
-        <!-- 其它 -->
-        <div class="extra">
-          订单号: GD20180511000000000178
-          <button size="mini" type="primary">支付</button>
-        </div>
-      </div>
-      <div class="item">
-        <!-- 商品图片 -->
-        <image class="pic" src="/static/uploads/goods_1.jpg"></image>
-        <!-- 商品信息 -->
-        <div class="meta">
-          <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-          <p class="price"><span>￥</span>1399<span>.00</span></p>
-          <p class="num">x1</p>
-        </div>
-        <!-- 总价 -->
-        <div class="amount">
-          共1件商品 总计: ￥4099(含运费0.00)
-        </div>
-        <!-- 其它 -->
-        <div class="extra">
-          订单号: GD20180511000000000178
-          <button size="mini" type="primary">支付</button>
-        </div>
-      </div>
-      <div class="item">
-        <!-- 商品图片 -->
-        <image class="pic" src="/static/uploads/goods_1.jpg"></image>
-        <!-- 商品信息 -->
-        <div class="meta">
-          <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-          <p class="price"><span>￥</span>1399<span>.00</span></p>
-          <p class="num">x1</p>
-        </div>
-        <!-- 总价 -->
-        <div class="amount">
-          共1件商品 总计: ￥4099(含运费0.00)
-        </div>
-        <!-- 其它 -->
-        <div class="extra">
-          订单号: GD20180511000000000178
-          <button size="mini" type="primary">支付</button>
+          订单号: {{perOneOrder.order_number}}
+          <button size="mini" type="primary" @click="payment(perOneOrder.order_number)" v-if="perOneOrder.pay_status === 0" >支付</button>
+          <button size="mini" v-else type="primary">已支付</button>
         </div>
       </div>
     </scroll-view>
   </div>
 </template>
 
-<style scoped lang="less">
 
-  .wrapper {
+<script>
+
+  // 导入对 wx.request 的 Promise 封装版本
+  import promiseRequest from "@/utility/package_promise_request"
+  
+  export default {
+
+    data () {
+
+      return {
+        
+        // 当前用户所有下过的订单列表(不论已支付待支付)数据信息
+        ordersDataList: []
+
+      }
+      
+    },
+
+    methods: {
+
+      // 微信支付   微信支付   微信支付
+      async payment (order_number) {
+
+        // 请求支付接口
+        const {message} = await promiseRequest({
+          url: '/api/public/v1/my/orders/req_unifiedorder',
+          method: 'post',
+          header: {Authorization: mpvue.getStorageSync('token')},
+          data: {order_number}
+        })
+
+        // console.log(message);
+
+        // 通过小程序的 api 可以调出微信支付窗口
+        mpvue.requestPayment(message.pay);
+
+      },
+      
+      // 获取当前用户所有下过的订单列表(不论已支付待支付)数据信息
+      async gainOrderList () {
+
+        // 请求接口
+        const {message} = await promiseRequest({
+          url: '/api/public/v1/my/orders/all',
+          header: {Authorization: mpvue.getStorageSync('token')},
+          data: {type: 1}
+        })
+
+        console.log(message);
+        // 数据更新
+        this.ordersDataList = message.orders;
+        
+      }
+
+    },
+
+    mounted () {
+      
+      // 页面一加载   --->   获取当前用户所有订单信息数据
+      this.gainOrderList()
+
+    }
     
   }
-  
+
+</script>
+
+
+
+<style scoped lang="less">
+
   .tabs {
     display: flex;
     height: 96rpx;
@@ -199,10 +211,3 @@
 
 </style>
 
-<script>
-  
-  export default {
-    
-  }
-
-</script>

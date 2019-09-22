@@ -1,167 +1,88 @@
 <template>
   <div class="wrapper">
-    <!-- 收货信息 -->
-    <dl class="shipment">
-      <block v-if="selectedAddressData">
-        <dt>收货人: </dt>
-        <dd class="meta">
-          <span class="name">{{selectedAddressData.userName}}</span>
-          <span class="phone">{{selectedAddressData.telNumber}}</span>
-        </dd>
-        <dt>收货地址:</dt>
-        <dd>{{concatSelectedAddressDataInfo}}</dd>
-      </block>
-      <button type="primary" @click="selectAddress" v-else>选择收货地址</button>
-    </dl>
-    <!-- 购物车 -->
-    <div class="carts">
-      <div class="item">
-        <!-- 店铺名称 -->
-        <div class="shopname">优购生活馆</div>
-        <div class="goods">
-          <!-- 商品图片 -->
-          <image class="pic" src="/static/uploads/goods_1.jpg"></image>
-          <!-- 商品信息 -->
-          <div class="meta">
-            <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-            <p class="price"><span>￥</span>1399<span>.00</span></p>
-            <!-- 加减 -->
-            <div class="amount">
-              <span class="reduce">-</span>
-              <input type="number" value="1" class="number">
-              <span class="plus">+</span>
+    <block v-if="cartGoods.length">
+      <!-- 收货信息 -->
+      <dl class="shipment">
+        <block v-if="selectedAddressData">
+          <dt>收货人: </dt>
+          <dd class="meta">
+            <span class="name">{{selectedAddressData.userName}}</span>
+            <span class="phone">{{selectedAddressData.telNumber}}</span>
+          </dd>
+          <dt>收货地址:</dt>
+          <dd>{{concatSelectedAddressDataInfo}}</dd>
+        </block>
+        <button type="primary" @click="selectAddress" v-else>选择收货地址</button>
+      </dl>
+      <!-- 购物车 -->
+      <div class="carts">
+        <div class="item">
+          <!-- 店铺名称 -->
+          <div class="shopname">优购生活馆</div>
+          <div class="goods" v-for="(cartGoodsItem,index) in cartGoods" :key="cartGoodsItem.goods_id">
+            <!-- 商品图片 -->
+            <image class="pic" :src="cartGoodsItem.goods_small_logo"></image>
+            <!-- 商品信息 -->
+            <div class="meta">
+              <p class="name">{{cartGoodsItem.goods_name}}</p>
+              <p class="price"><span>￥</span>{{cartGoodsItem.goods_price}}<span>.00</span></p>
+              <!-- 加减 -->
+              <div class="amount">
+                <span class="reduce" @click="changeNumber(-1,index)">-</span>
+                <input type="number" :value="cartGoodsItem.goods_number" class="number">
+                <span class="plus" @click="changeNumber(1,index)">+</span>
+              </div>
             </div>
+            <!-- 选框 -->
+            <span class="checkbox" @click="toggle(index)">
+              <icon type="success" size="20" :color="cartGoodsItem.goods_checked ? '#ea4451' : '#ccc'" ></icon>
+            </span>
           </div>
-          <!-- 选框 -->
-          <span class="checkbox">
-            <icon type="success" size="20" color="#ea4451"></icon>
-          </span>
-        </div>
-        <div class="goods">
-          <!-- 商品图片 -->
-          <image class="pic" src="/static/uploads/goods_2.jpg"></image>
-          <!-- 商品信息 -->
-          <div class="meta">
-            <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-            <p class="price"><span>￥</span>1399<span>.00</span></p>
-            <!-- 加减 -->
-            <div class="amount">
-              <span class="reduce">-</span>
-              <input type="number" value="1" class="number">
-              <span class="plus">+</span>
-            </div>
-          </div>
-          <!-- 选框 -->
-          <span class="checkbox">
-            <icon type="success" size="20" color="#ea4451"></icon>
-          </span>
-        </div>
-        <div class="goods">
-          <!-- 商品图片 -->
-          <image class="pic" src="/static/uploads/goods_5.jpg"></image>
-          <!-- 商品信息 -->
-          <div class="meta">
-            <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-            <p class="price"><span>￥</span>1399<span>.00</span></p>
-            <!-- 加减 -->
-            <div class="amount">
-              <span class="reduce">-</span>
-              <input type="number" value="1" class="number">
-              <span class="plus">+</span>
-            </div>
-          </div>
-          <!-- 选框 -->
-          <span class="checkbox">
-            <icon type="success" size="20" color="#ccc"></icon>
-          </span>
         </div>
       </div>
-      <div class="item">
-        <!-- 店铺名称 -->
-        <div class="shopname">优购生活馆</div>
-        <div class="goods">
-          <!-- 商品图片 -->
-          <image class="pic" src="/static/uploads/goods_1.jpg"></image>
-          <!-- 商品信息 -->
-          <div class="meta">
-            <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-            <p class="price"><span>￥</span>1399<span>.00</span></p>
-            <!-- 加减 -->
-            <div class="amount">
-              <span class="reduce">-</span>
-              <input type="number" value="1" class="number">
-              <span class="plus">+</span>
-            </div>
-          </div>
-          <!-- 选框 -->
-          <span class="checkbox">
-            <icon type="success" size="20" color="#ccc"></icon>
-          </span>
+      <!-- 其它 -->
+      <div class="extra">
+        <label class="checkall">
+          <icon type="success" @click="checkAll" :color="((cartGoods.length === gainSelectedGoods.length) || checkAllOrCancelCheckAll) ? '#ea4451' : '#ccc'" size="20"></icon>
+          全选
+        </label>
+        <div class="total">
+          合计: <span>￥</span><label>{{amount}}</label><span>.00</span>
         </div>
-        <div class="goods">
-          <!-- 商品图片 -->
-          <image class="pic" src="/static/uploads/goods_2.jpg"></image>
-          <!-- 商品信息 -->
-          <div class="meta">
-            <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-            <p class="price"><span>￥</span>1399<span>.00</span></p>
-            <!-- 加减 -->
-            <div class="amount">
-              <span class="reduce">-</span>
-              <input type="number" value="2" class="number">
-              <span class="plus">+</span>
-            </div>
-          </div>
-          <!-- 选框 -->
-          <span class="checkbox">
-            <icon type="success" size="20" color="#ea4451"></icon>
-          </span>
-        </div>
-        <div class="goods">
-          <!-- 商品图片 -->
-          <image class="pic" src="/static/uploads/goods_5.jpg"></image>
-          <!-- 商品信息 -->
-          <div class="meta">
-            <p class="name">【海外购自营】黎珐(ReFa) MTG日本 CARAT铂金微电流瘦脸瘦身提拉紧致V脸美容仪 【保税仓发货】</p>
-            <p class="price"><span>￥</span>1399<span>.00</span></p>
-            <!-- 加减 -->
-            <div class="amount">
-              <span class="reduce">-</span>
-              <input type="number" value="1" class="number">
-              <span class="plus">+</span>
-            </div>
-          </div>
-          <!-- 选框 -->
-          <span class="checkbox">
-            <icon type="success" size="20" color="#ccc"></icon>
-          </span>
-        </div>
+        <div class="pay" @click="payment">结算({{gainSelectedGoods.length}})</div>
       </div>
-    </div>
-    <!-- 其它 -->
-    <div class="extra">
-      <label class="checkall">
-        <icon type="success" color="#ccc" size="20"></icon>
-        全选
-      </label>
-      <div class="total">
-        合计: <span>￥</span><label>14110</label><span>.00</span>
-      </div>
-      <div class="pay">结算(3)</div>
-    </div>
+    </block>
+    <block class=".tips" v-else>我爱你三千遍~</block>
   </div>
 </template>
 
 
 
 <script>
+
+  // 导入对 wx.request 的 Promise 封装版本
+  import promiseRequest from "@/utility/package_promise_request"
+
   export default {
+
+    onShow () {
+      
+      // 实时获取本地存储的数据
+      this.cartGoods = mpvue.getStorageSync('carts') || [];
+
+    },
 
     data () {
       return {
 
         // 用户选中的收获地址信息数据
-        selectedAddressData: null
+        selectedAddressData: null,
+
+        // 用户添加到购物车的数据
+        cartGoods: mpvue.getStorageSync("carts") || [],
+
+        // 全选与取消全选状态数据
+        checkAllOrCancelCheckAll: true
         
       }
     },
@@ -176,6 +97,75 @@
             this.selectedAddressData = selectedAddressInfo
           }
         })
+      },
+
+      // 对购物车的数量进行加减操作的方法
+      changeNumber (step,index) {
+        
+        // 最少购买一件
+        if(step == -1 && this.cartGoods[index].goods_number <= 1) {
+          return mpvue.showToast({title: '至少买一件'});
+        }
+
+        // 最多不能超过库存
+        if(step == 1 && this.cartGoods[index].goods_number >= 10) {
+          return mpvue.showToast({title: '不能超过库存'});
+        }
+
+        // 对索引值为 index 的商品 增减数量
+        // console.log(index)
+        this.cartGoods[index].goods_number += step;
+
+      },
+
+      // 切换购物车商品选中的状态
+      toggle (index) {
+        // console.log(11111)
+        this.cartGoods[index].goods_checked = !this.cartGoods[index].goods_checked;
+      },
+
+       // 全选操作
+      checkAll () {
+        this.checkAllOrCancelCheckAll = !this.checkAllOrCancelCheckAll
+        this.cartGoods.forEach((item)=>{
+          item.goods_checked = this.checkAllOrCancelCheckAll
+        })
+      },
+
+      // 结算功能方法
+      payment () {
+
+        // 检测是否登录（本地是否有 token）
+        // if(!mpvue.getStorageSync('token')) {
+        //   return mpvue.navigateTo({url: '/pages/author/main'});
+        // }
+
+        // 用户是否填写收货地址
+        if(!this.concatSelectedAddressDataInfo) {
+          return mpvue.showToast({title: '收货地址必填!'});
+        }
+
+        // 用户是否选中商品
+        if(!this.gainSelectedGoods.length) {
+          return mpvue.showToast({title: '至少买一件'});
+        }
+
+        // // 完成结算操作
+        // const {message, meta} = await promiseRequest({
+        //   url: '/api/public/v1/my/orders/create',
+        //   method: 'post',
+        //   // 登录令牌
+        //   header: {Authorization: mpvue.getStorageSync('token')},
+        //   data: {
+        //     order_price: this.amount,
+        //     consignee_addr: this.concatSelectedAddressDataInfo,
+        //     goods: this.gainSelectedGoods
+        //   }
+        // })
+
+        // // 创建订单成功
+        // if(meta.status == 200) return mpvue.navigateTo({url: '/pages/order/main'});
+
       }
 
     },
@@ -187,6 +177,37 @@
                                                 this.selectedAddressData.cityName + 
                                                     this.selectedAddressData.countyName + 
                                                         this.selectedAddressData.detailInfo)
+      },
+
+      // 提取出来在购物车中已勾选选中的商品
+      gainSelectedGoods () {
+        // console.log(222222)
+
+        return this.cartGoods.filter((item)=>{
+          return item.goods_checked
+        })
+
+      },
+
+      // 判断选中的商品个数与购物车中商品的个数
+      selectedGoodsISEqualCartGoods () {
+        if(!(this.gainSelectedGoods.length === this.cartGoods.length)) 
+          this.checkAllOrCancelCheckAll = false
+        return this.gainSelectedGoods.length === this.cartGoods.length
+      },
+
+      // 解决bug   --->   bug是:  不好描述  就这样吧
+      hello () {
+        this.checkAllOrCancelCheckAll = this.selectedGoodsISEqualCartGoods
+      },
+
+      // 计算购物车金额
+      amount () {
+        let total = 0;
+        this.gainSelectedGoods.forEach((item)=>{
+          total += item.goods_number * item.goods_price
+        })
+        return total
       }
 
     }
@@ -197,6 +218,13 @@
 
 
 <style scoped lang="less">
+
+  .tips {
+    text-align: center;
+    font-size: 40rpx;
+    color: #666;
+    margin-top: 200rpx;
+  }
 
   .shipment {
     height: 100rpx;

@@ -107,7 +107,8 @@
             goods_price,
             goods_name,
             goods_small_logo,
-            goods_number: 1
+            goods_number: 1,
+            goods_checked: true
           });
         }
 

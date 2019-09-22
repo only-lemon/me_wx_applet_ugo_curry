@@ -15,9 +15,10 @@ export default function (configRequest) {
   var url = configRequest.url || ""
   var method = configRequest.method || "GET"
   var data = configRequest.data || {}
+  var header = configRequest.header || {}
 
   // 配置基础路径
-  url = 'https://www.zhengzhicheng.cn' + url;
+  url = 'https://localhost' + url;
 
   // 开启loading效果
   mpvue.showLoading({title : "正在加载..."})

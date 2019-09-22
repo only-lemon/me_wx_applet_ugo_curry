@@ -6,7 +6,8 @@
     "pages/center/main",
     "pages/list/main",
     "pages/goods/main",
-    "pages/order/main"
+    "pages/order/main",
+    "pages/author/main"
   ],
   "window": {
     "navigationBarBackgroundColor": "#ea4451",
