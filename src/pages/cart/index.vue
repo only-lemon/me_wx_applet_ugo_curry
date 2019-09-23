@@ -52,7 +52,7 @@
         <div class="pay" @click="payment">结算({{gainSelectedGoods.length}})</div>
       </div>
     </block>
-    <block class=".tips" v-else>我爱你三千遍~</block>
+    <block v-else><div class="tips">我爱你三千遍~</div></block>
   </div>
 </template>
 
